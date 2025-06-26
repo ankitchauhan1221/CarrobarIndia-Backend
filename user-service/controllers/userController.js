@@ -53,6 +53,8 @@ exports.initiateRegistration = async (req, res) => {
   }
 };
 
+// jitender bhai 
+
 exports.resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
