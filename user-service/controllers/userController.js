@@ -53,7 +53,7 @@ exports.initiateRegistration = async (req, res) => {
   }
 };
 
-// jitender bhai 
+// jitender bhai with ankit
 
 exports.resendOtp = async (req, res) => {
   try {
