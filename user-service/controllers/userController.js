@@ -13,17 +13,30 @@ exports.initiateRegistration = async (req, res) => {
     }
 
     if (role && !['admin', 'user', 'dealer'].includes(role)) {
-      returnclosure
-      res.status(400).json({ error: 'Invalid role' });
+      return res.status(400).json({ error: 'Invalid role' });
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: 'Email already exists' });
+      if (existingUser.isVerified) {
+        return res.status(400).json({ error: 'Email already exists and is verified' });
+      }
+      // Unverified user exists, send new OTP
+      try {
+        console.log('Calling email-service send-otp for unverified user:', { email });
+        await axios.post('http://localhost:3003/api/email/send-otp', { email });
+        return res.status(200).json({ message: 'OTP resent to email' });
+      } catch (error) {
+        return res.status(500).json({ error: `Failed to send OTP: ${error.response?.data?.error || error.message}` });
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ email, password: hashedPassword, role: role || 'user' });
+    const user = new User({
+      email,
+      password: hashedPassword,
+      role: role || 'user'
+    });
     await user.save();
 
     try {
@@ -51,8 +64,11 @@ exports.resendOtp = async (req, res) => {
     }
 
     const user = await User.findOne({ email });
-    if (!user || user.isVerified) {
-      return res.status(400).json({ error: 'User not found or already verified' });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (user.isVerified) {
+      return res.status(400).json({ error: 'User is already verified' });
     }
 
     try {
