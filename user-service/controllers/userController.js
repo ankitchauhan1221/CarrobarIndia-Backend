@@ -53,8 +53,6 @@ exports.initiateRegistration = async (req, res) => {
   }
 };
 
-// jitender bhai 
-
 exports.resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
@@ -110,6 +108,50 @@ exports.completeRegistration = async (req, res) => {
 
     res.json({ message: 'Registration completed successfully', role: user.role });
   } catch (error) {
+    res.status(500).json({ error: `Server error: ${error.message}` });
+  }
+};
+
+exports.getUserIdByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    console.log('Received in getUserIdByEmail:', { email });
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const user = await User.findOne({ email }).select('_id');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ id: user._id });
+  } catch (error) {
+    console.error('Error in getUserIdByEmail:', error.message);
+    res.status(500).json({ error: `Server error: ${error.message}` });
+  }
+};
+
+exports.getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    console.log('Received in getUserById:', { id });
+
+    if (!id) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const user = await User.findById(id).select('_id email password name role isVerified');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    console.error('Error in getUserById:', error.message);
     res.status(500).json({ error: `Server error: ${error.message}` });
   }
 };
