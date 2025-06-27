@@ -155,3 +155,29 @@ exports.getUserById = async (req, res) => {
     res.status(500).json({ error: `Server error: ${error.message}` });
   }
 };
+
+exports.updatePassword = async (req, res) => {
+  try {
+    const { id, newPassword } = req.body;
+
+    console.log('Received in updatePassword:', { id });
+
+    if (!id || !newPassword) {
+      return res.status(400).json({ error: 'User ID and new password are required' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error in updatePassword:', error.message);
+    res.status(500).json({ error: `Server error: ${error.message}` });
+  }
+};
