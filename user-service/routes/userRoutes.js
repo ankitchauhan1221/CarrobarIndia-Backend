@@ -7,5 +7,6 @@ router.post('/resend-otp', userController.resendOtp);
 router.post('/complete-registration', userController.completeRegistration);
 router.get('/id/:email', userController.getUserIdByEmail);
 router.get('/by-id/:id', userController.getUserById);
+router.patch('/update-password', userController.updatePassword);
 
 module.exports = router;
